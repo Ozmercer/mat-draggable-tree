@@ -1,0 +1,7 @@
+export declare enum PageType {
+  BLOG = 0,
+  POST = 1,
+  GENERAL = 2,
+  COMPARE = 3,
+  REVIEW = 4
+}

@@ -1,20 +1,181 @@
-<!--The content below is only a placeholder and can be replaced.-->
-<div style="text-align:center">
-  <h1>
-    Welcome to {{ title }}!
-  </h1>
-  <img width="300" alt="Angular Logo" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTAgMjUwIj4KICAgIDxwYXRoIGZpbGw9IiNERDAwMzEiIGQ9Ik0xMjUgMzBMMzEuOSA2My4ybDE0LjIgMTIzLjFMMTI1IDIzMGw3OC45LTQzLjcgMTQuMi0xMjMuMXoiIC8+CiAgICA8cGF0aCBmaWxsPSIjQzMwMDJGIiBkPSJNMTI1IDMwdjIyLjItLjFWMjMwbDc4LjktNDMuNyAxNC4yLTEyMy4xTDEyNSAzMHoiIC8+CiAgICA8cGF0aCAgZmlsbD0iI0ZGRkZGRiIgZD0iTTEyNSA1Mi4xTDY2LjggMTgyLjZoMjEuN2wxMS43LTI5LjJoNDkuNGwxMS43IDI5LjJIMTgzTDEyNSA1Mi4xem0xNyA4My4zaC0zNGwxNy00MC45IDE3IDQwLjl6IiAvPgogIDwvc3ZnPg==">
-</div>
-<h2>Here are some links to help you start: </h2>
-<ul>
-  <li>
-    <h2><a target="_blank" rel="noopener" href="https://angular.io/tutorial">Tour of Heroes</a></h2>
-  </li>
-  <li>
-    <h2><a target="_blank" rel="noopener" href="https://angular.io/cli">CLI Documentation</a></h2>
-  </li>
-  <li>
-    <h2><a target="_blank" rel="noopener" href="https://blog.angular.io/">Angular blog</a></h2>
-  </li>
-</ul>
+<div class="page-list table-container" *ngIf="!editable && pagesMap">
+  <div class="container card">
+    <div class="row">
+      <div class="col-12">
 
+        <!--<div class="container">-->
+          <!--<div class="row  d-flex justify-content-between align-items-center">-->
+            <!--<div class="col-6">-->
+              <!--<mat-form-field class="searchInput">-->
+                <!--<span matPrefix><mat-icon class="search-icon"> search</mat-icon></span>-->
+                <!--<input matInput [(ngModel)]="searchTerm" (keyup)="searchOnchange($event.target.value)" placeholder="Search">-->
+              <!--</mat-form-field>-->
+            <!--</div>-->
+            <!--<div class="col-6">-->
+              <!--<div *ngIf="pageFormat === 'table'">-->
+                <!--<div class="bulk-actions multipleCloneContainer">-->
+                  <!--<button class="bulk-actions-btn" mat-raised-button [matMenuTriggerFor]="bulkActions" #trigger>-->
+                    <!--Bulk actions-->
+                    <!--<mat-icon>{{trigger.menuOpen ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}}</mat-icon>-->
+                  <!--</button>-->
+                  <!--<mat-menu #bulkActions="matMenu">-->
+                    <!--<button mat-menu-item (click)="openMultiCloneDialog()">Multiple Pages Clone</button>-->
+                    <!--<button mat-menu-item (click)="openBulkActionsModal('add')" value="add" [disabled]="!bulkActionsItems.length">-->
+                      <!--Add labels-->
+                    <!--</button>-->
+                    <!--<button mat-menu-item (click)="openBulkActionsModal('remove')" value="remove"-->
+                            <!--[disabled]="selectedLabels.length === 0">Remove labels-->
+                    <!--</button>-->
+                  <!--</mat-menu>-->
+                  <!--<div class="bulk-modal" *ngIf="showBulkModal">-->
+                    <!--<app-add-labels (labelsAdded)="editMultipleLabels($event)" (cancel)="showBulkModal = false"-->
+                                    <!--*ngIf="modalState"-->
+                                    <!--[selectedPages]="bulkActionsItems" [selectedLabels]="selectedLabels"-->
+                                    <!--[state]="modalState"></app-add-labels>-->
+                    <!--&lt;!&ndash;<app-remove-labels (labelsAdded)="editMultipleLabels($event)" (cancel)="showBulkModal = false" *ngIf="modalState === 'remove'"&ndash;&gt;-->
+                    <!--&lt;!&ndash;[selectedPages]="bulkActionsItems" [selectedLabels]="selectedLabels"></app-remove-labels>&ndash;&gt;-->
+                  <!--</div>-->
+                <!--</div>-->
+              <!--</div>-->
+
+              <!--<button mat-raised-button color="primary" *ngIf="pageFormat === 'tree' && isModified" class="save-tree-btn"-->
+                      <!--(click)="saveTreeChanges()" [disabled]="savingTree">-->
+                <!--{{savingTree ? 'Saving' :'Save changes'}}-->
+                <!--<i *ngIf="savingTree" class="fa fa-spinner fa-spin fa-fw"></i>-->
+              <!--</button>-->
+            <!--</div>-->
+          <!--</div>-->
+        <!--</div>-->
+
+        <div class="filter-btns-wrapper">
+          <div class="tree-btns" *ngIf="pageFormat === 'tree'">
+            <h4>Pages <span class="small">(showing {{filteredRows.length}})</span></h4>
+            <div class="filterBtns">
+              <button mat-button [ngClass]="{'active': activeFilterButton === 'published'}" class="page-list-filter-btn" (click)="filterRows(1)">
+                Published ({{selectedWebsite.pages.length - disabledRowsCount}})
+              </button>
+              <button mat-button [ngClass]="{'active': activeFilterButton === 'all'}" class="page-list-filter-btn" (click)="filterRows(0)">All
+                ({{selectedWebsite.pages.length}})
+              </button>
+              <button mat-button [ngClass]="{'active': activeFilterButton === 'trashed'}" class="page-list-filter-btn" (click)="filterRows(2)">Trashed
+                ({{disabledRowsCount}})
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="page-list" *ngIf="filteredRows.length; else noPages">
+          <div class="tree-display" *ngIf="pageFormat === 'tree'">
+
+            <div class="tree-table table-header">
+              <div class="header-slice">
+                <mat-checkbox [checked]="isAllSelectTree()"
+                              [indeterminate]="bulkActionsItems.length && !isAllSelectTree()"
+                              (change)="masterToggleTree($event.checked)"></mat-checkbox>
+                <span class="name">Name</span>
+              </div>
+              <div class="header-slice">
+                <span class="page-type">Page type</span>
+                <span class="language">Language</span>
+                <span class="vertical">Vertical</span>
+              </div>
+            </div>
+
+            <!--**** TREE DISPLAY ****-->
+            <mat-tree [dataSource]="treeDataSource" [treeControl]="treeControl" class="example-tree" #tree cdkDropList>
+              <!-- This is the tree node template for leaf nodes -->
+              <mat-tree-node *matTreeNodeDef="let node" matTreeNodeToggle cdkDropList (mouseup)="releaseRow(node)" (cdkDropListDropped)="drop()">
+                <li class="mat-tree-node" cdkDrag [cdkDragDisabled]="!draggablePageTypes.includes(node.pageType)">
+                  <div class="handle-wrapper">
+                    <mat-icon cdkDragHandle (mousedown)="dragRow(node)" *ngIf="draggablePageTypes.includes(node.pageType)">drag_handle</mat-icon>
+                  </div>
+                  <div class="spacer" *ngIf="!node.parentId" style="width: 38px;"></div>
+                  <mat-icon *ngIf="node.parentId" class="mr-2">subdirectory_arrow_right</mat-icon>
+                  <!-- use a disabled button to provide padding for tree leaf -->
+                  <mat-checkbox [(ngModel)]="node.isChecked" (change)="addToBulkTree(node, $event.checked)"
+                                class="tree-checkbox"></mat-checkbox>
+                  <!--<button mat-icon-button disabled></button>-->
+                  <div class="tree-table" [ngClass]="{origin: draggedRow === node, dragging: draggedRow && draggedRow !== node && dropablePageTypes.includes(node.pageType)}">
+                    <div class="name">
+                      <mat-icon matTooltip="Page is Active" *ngIf="node.isEnabled" class="website-status status-active">
+                        lens
+                      </mat-icon>
+                      <mat-icon matTooltip="Page is Down" *ngIf="!node.isEnabled" class="website-status status-disabled">
+                        lens
+                      </mat-icon>
+                      <div class="d-flex flex-column">
+                        <span>{{ getPageName(node) }}</span>
+                        <a [href]="'https://'+selectedWebsite.domain+node.path" target="_blank">{{node.path}}</a>
+                      </div>
+                    </div>
+                    <div class="justify-content-between d-flex">
+                        <span class="page-type" (click)="searchOnchange(pageTypeToString(node.pageType))">
+                        {{getType(node.pageType) === 'BLOG'? 'BLOG POST' : getType(node.pageType)}}
+                      </span>
+                      <span class="language" (click)="searchOnchange(node.language)">{{node.language}}</span>
+                      <span class="vertical" (click)="searchOnchange(node.vertical)">{{node.vertical}}</span>
+                    </div>
+                  </div>
+                </li>
+              </mat-tree-node>
+              <!-- This is the tree node template for expandable nodes -->
+              <mat-nested-tree-node *matTreeNodeDef="let node; when: hasChild" (mouseup)="releaseRow(node)">
+                <li cdkDropList (cdkDropListDropped)="drop()">
+                  <div class="mat-tree-node" cdkDrag [cdkDragDisabled]="!draggablePageTypes.includes(node.pageType)">
+                    <div class="handle-wrapper">
+                      <mat-icon cdkDragHandle (mousedown)="dragRow(node)" *ngIf="draggablePageTypes.includes(node.pageType)">drag_handle</mat-icon>
+                    </div>
+                    <button mat-icon-button matTreeNodeToggle (click)="node.minimized = !node.minimized" [attr.aria-label]="'toggle ' + node.name" style="width: 35px;">
+                      <mat-icon class="mat-icon-rtl-mirror">
+                        {{node.minimized ? 'chevron_right' : 'expand_more'}}
+                      </mat-icon>
+                    </button>
+                    <mat-checkbox [(ngModel)]="node.isChecked" (change)="addToBulkTree(node, $event.checked)"
+                                  class="tree-checkbox"></mat-checkbox>
+                    <div class="tree-table" [ngClass]="{origin: node === draggedRow, dragging: draggedRow && draggedRow !== node && dropablePageTypes.includes(node.pageType)}">
+                      <div class="name">
+                        <mat-icon matTooltip="Page is Active" *ngIf="node.isEnabled" class="website-status status-active">
+                          lens
+                        </mat-icon>
+                        <mat-icon matTooltip="Page is Down" *ngIf="!node.isEnabled"
+                                  class="website-status status-disabled">
+                          lens
+                        </mat-icon>
+                        <div class="d-flex flex-column">
+                          <span>{{ getPageName(node) }}</span>
+                          <a [href]="'https://'+selectedWebsite.domain+node.path" target="_blank">{{node.path}}</a>
+                        </div>
+                      </div>
+                      <div class="justify-content-between d-flex">
+                        <span class="page-type" (click)="pageTypeToString(node.pageType)">
+                          {{getType(node.pageType) === 'BLOG'? 'BLOG POST' : getType(node.pageType)}}
+                        </span>
+                        <span class="language" (click)="searchOnchange(node.language)">{{node.language}}</span>
+                        <span class="vertical" (click)="searchOnchange(node.vertical)">{{node.vertical}}</span>
+                      </div>
+                    </div>
+
+                  </div>
+                  <ul [class.example-tree-invisible]="!treeControl.isExpanded(node)" *ngIf="!node.minimized">
+                    <ng-container matTreeNodeOutlet></ng-container>
+                  </ul>
+                </li>
+              </mat-nested-tree-node>
+            </mat-tree>
+            <div class="show-more d-flex justify-content-center">
+              <button mat-button (click)="addRows()" *ngIf="!showingAllRows">Show more</button>
+              <button mat-button (click)="addRows(true)" *ngIf="maxRows > MAX_ROWS">Show less</button>
+            </div>
+          </div>
+          <!--**** END TREE DISPLAY ****-->
+        </div>
+
+        <ng-template #noPages>
+          <div class="no-pages col-12">
+            <h4>No pages to display</h4>
+          </div>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+</div>
